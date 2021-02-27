@@ -11,6 +11,8 @@ namespace VacationRental.Api
 {
     public class Startup
     {
+        public static int PreparationTimeInDays { get; private set; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -27,6 +29,14 @@ namespace VacationRental.Api
 
             services.AddSingleton<IDictionary<int, RentalViewModel>>(new Dictionary<int, RentalViewModel>());
             services.AddSingleton<IDictionary<int, BookingViewModel>>(new Dictionary<int, BookingViewModel>());
+
+            var preparationTimeInDaysCfg = Configuration.GetValue<string>("PreparationTimeInDays");
+            int.TryParse(preparationTimeInDaysCfg, out int preparationTimeInDays);
+            PreparationTimeInDays = preparationTimeInDays;
+            if (PreparationTimeInDays == 0)
+            {
+                PreparationTimeInDays = 1;
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
