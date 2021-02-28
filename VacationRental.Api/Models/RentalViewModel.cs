@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace VacationRental.Api.Models
 {
-    public class RentalViewModel
+    public class RentalViewModel : ICloneable
     {
         public int Id { get; set; }
         public int Units { get; set; }
@@ -33,7 +33,7 @@ namespace VacationRental.Api.Models
             return result;
         }
 
-        public IList<BookingUnit> BookingUnitsByRental => UnitList.SelectMany(o => o.BookingUnit).ToList();
+        public IList<BookingUnit> BookingUnitsByRental => UnitList.SelectMany(o => o.BookingUnits).ToList();
 
         public bool IsAvailableRange(int desirableUnitsQuantity, DateTime startDate, int numberOfNights)
         {
@@ -57,11 +57,29 @@ namespace VacationRental.Api.Models
             {
                 if (count <= minimunUnits)
                 {
-                    unit.BookingUnit.Add(new BookingUnit(idBooking, this.Id, unit.Id, startDate, numberOfNights));
+                    unit.BookingUnits.Add(new BookingUnit(idBooking, this.Id, unit.Id, startDate, numberOfNights));
                 }
 
                 count++;
             }
+        }
+
+        public void SetPreparationTimeToCheckOverlap(int newPreparationTimeInDays)
+        {
+            foreach (var item in BookingUnitsByRental)
+                item.SetPreparationTimeToCheckOverlap(newPreparationTimeInDays);
+        }
+
+        public object Clone()
+        {
+            RentalViewModel newItem = (RentalViewModel)this.MemberwiseClone();
+            //newItem._unitList = null;
+            //foreach (var oldUnit in UnitList)
+            //{
+            //    newItem.UnitList.Add((Unit)oldUnit.Clone());
+            //}
+
+            return newItem;
         }
     }
 }

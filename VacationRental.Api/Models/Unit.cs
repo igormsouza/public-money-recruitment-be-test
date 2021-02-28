@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace VacationRental.Api.Models
 {
-    public class Unit
+    public class Unit : ICloneable
     {
         public Unit(int id, int rentalId)
         {
@@ -15,15 +15,27 @@ namespace VacationRental.Api.Models
         public int Id { get; set; }
         public int RentalId { get; set; }
 
-        private IList<BookingUnit> _bookingUnit;
-        public IList<BookingUnit> BookingUnit
+        private IList<BookingUnit> _bookingUnits;
+        public IList<BookingUnit> BookingUnits
         {
             get 
             {
-                _bookingUnit = _bookingUnit ?? new List<BookingUnit>();
-                return _bookingUnit;
+                _bookingUnits = _bookingUnits ?? new List<BookingUnit>();
+                return _bookingUnits;
             }
-            set { _bookingUnit = value; }
+            set { _bookingUnits = value; }
+        }
+
+        public object Clone()
+        {
+            Unit newItem = (Unit)this.MemberwiseClone();
+            //newItem._bookingUnits = null;
+            //foreach (var oldBooking in BookingUnits)
+            //{
+            //    newItem.BookingUnits.Add((BookingUnit)oldBooking.Clone());
+            //}
+
+            return newItem;
         }
     }
 }
