@@ -73,12 +73,6 @@ namespace VacationRental.Api.Models
         public object Clone()
         {
             RentalViewModel newItem = (RentalViewModel)this.MemberwiseClone();
-            //newItem._unitList = null;
-            //foreach (var oldUnit in UnitList)
-            //{
-            //    newItem.UnitList.Add((Unit)oldUnit.Clone());
-            //}
-
             return newItem;
         }
     }

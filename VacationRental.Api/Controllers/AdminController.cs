@@ -34,60 +34,68 @@ namespace VacationRental.Api.Controllers
         [HttpPost]
         public AdminReArangeResultViewModel Post(AdminReArangeViewModel model)
         {
-            if (model.PreparationTimeIndays < 0)
-                throw new ApplicationException("Preparation Time cannot be less than zero");
+            var result = new AdminReArangeResultViewModel() { Result = true };
 
-            // Optional first case: change PreparationTimeIndays
-
-            if (_adminData.PreparationTimeIndays < model.PreparationTimeIndays && _rentals.Any())
+            try
             {
-                var cloneRentals = _rentals.Select(o => (RentalViewModel)o.Value.Clone()).ToList();
-                foreach (var cloneRental in cloneRentals)
-                {
-                    cloneRental.SetPreparationTimeToCheckOverlap(model.PreparationTimeIndays);
-                }
+                if (model.PreparationTimeIndays < 0)
+                    throw new ApplicationException("Preparation Time cannot be less than zero");
 
-                // change item logic
-                foreach (var cloneRental in cloneRentals)
+                // Optional first case: change PreparationTimeIndays
+                if (_adminData.PreparationTimeIndays < model.PreparationTimeIndays && _rentals.Any())
                 {
-                    foreach (var unit in cloneRental.UnitList)
+                    var cloneRentals = _rentals.Select(o => (RentalViewModel)o.Value.Clone()).ToList();
+                    foreach (var cloneRental in cloneRentals)
                     {
-                        foreach (var booking in unit.BookingUnits)
+                        cloneRental.SetPreparationTimeToCheckOverlap(model.PreparationTimeIndays);
+                    }
+
+                    // change item logic
+                    foreach (var cloneRental in cloneRentals)
+                    {
+                        foreach (var unit in cloneRental.UnitList)
                         {
-                            var otherBookings = unit.BookingUnits.Where(o => o.IdBooking != booking.IdBooking).ToList();
-                            foreach (var otherBooking in otherBookings)
+                            foreach (var booking in unit.BookingUnits)
                             {
-                                if (!otherBooking.IsAvailableRange(booking.Start, booking.Nights))
+                                var otherBookings = unit.BookingUnits.Where(o => o.IdBooking != booking.IdBooking).ToList();
+                                foreach (var otherBooking in otherBookings)
                                 {
-                                    var msgError = $"It is not possible to change the Preparation TimePreparation hiegher than his current value{_adminData.PreparationTimeIndays} {Environment.NewLine}";
-                                    msgError += $"we already have a time booked for the range - day:{booking.Start} and nights:{booking.Nights}. Overlaped with IdBooking:{otherBooking.IdBooking}, IdRental:{otherBooking.IdRental}, IdUnit:{otherBooking.IdUnit}";
-                                    throw new ApplicationException(msgError);
+                                    if (!otherBooking.IsAvailableRange(booking.Start, booking.Nights))
+                                    {
+                                        var msgError = $"It is not possible to change the Preparation TimePreparation hiegher than his current value{_adminData.PreparationTimeIndays} {Environment.NewLine}";
+                                        msgError += $"we already have a time booked for the range - day:{booking.Start} and nights:{booking.Nights}. Overlaped with IdBooking:{otherBooking.IdBooking}, IdRental:{otherBooking.IdRental}, IdUnit:{otherBooking.IdUnit}";
+                                        throw new ApplicationException(msgError);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            _adminData.PreparationTimeIndays = model.PreparationTimeIndays;
+                _adminData.PreparationTimeIndays = model.PreparationTimeIndays;
 
-            // Optional second case: change Units
-            if (model.RentalId > 0)
-            {
-                if (!_rentals.ContainsKey(model.RentalId))
-                    throw new ApplicationException("Rental not found");
-                if (model.Units <= 0)
-                    throw new ApplicationException("Unit must be bigger than zero");
-
-                if (_rentals[model.RentalId].Units != model.Units && _rentals.Any())
+                // Optional second case: change Units
+                if (model.RentalId > 0)
                 {
-                    // change item logic
+                    if (!_rentals.ContainsKey(model.RentalId))
+                        throw new ApplicationException("Rental not found");
+                    if (model.Units <= 0)
+                        throw new ApplicationException("Unit must be bigger than zero");
 
+                    if (model.Units < _rentals[model.RentalId].Units)
+                    {
+                        throw new ApplicationException("You cannot decrease the number of units.");
+                    }
+                    _rentals[model.RentalId].Units = model.Units;
                 }
-                _rentals[model.RentalId].Units = model.Units;
+            }
+            catch (Exception ex)
+            {
+                result.Result = false;
+                result.ErrorMessage = ex.Message;
             }
 
-            return new AdminReArangeResultViewModel() { Result = true };
+            return result;
         }
     }
 }

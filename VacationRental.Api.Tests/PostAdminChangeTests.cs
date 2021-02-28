@@ -77,12 +77,69 @@ namespace VacationRental.Api.Tests
             };
 
             AdminReArangeResultViewModel postResultChangeCrash;
-            await Assert.ThrowsAsync<ApplicationException>(async () =>
+            using (var postResponse = await _client.PostAsJsonAsync($"/api/v1/admin", requestChangeCrash))
             {
-                using (var postResponse = await _client.PostAsJsonAsync($"/api/v1/admin", requestChangeCrash))
-                {
-                }
-            });
+                Assert.True(postResponse.IsSuccessStatusCode);
+                postResultChangeCrash = await postResponse.Content.ReadAsAsync<AdminReArangeResultViewModel>();
+                Assert.True(!postResultChangeCrash.Result);
+                Assert.Contains("It is not possible to change the Preparation TimePreparation", postResultChangeCrash.ErrorMessage);
+            }
+        }
+
+        [Fact]
+        public async Task GivenCompleteRequest_WhenPostAdminUnit_ThenAGetReturnsTheValue()
+        {
+            var request = new AdminReArangeViewModel
+            {
+                PreparationTimeIndays = 1
+            };
+
+            AdminReArangeResultViewModel postResult;
+            using (var postResponse = await _client.PostAsJsonAsync($"/api/v1/admin", request))
+            {
+                Assert.True(postResponse.IsSuccessStatusCode);
+            }
+
+            var postRentalRequest = new RentalBindingModel
+            {
+                Units = 2
+            };
+
+            ResourceIdViewModel postRentalResult;
+            using (var postRentalResponse = await _client.PostAsJsonAsync($"/api/v1/rentals", postRentalRequest))
+            {
+                Assert.True(postRentalResponse.IsSuccessStatusCode);
+                postRentalResult = await postRentalResponse.Content.ReadAsAsync<ResourceIdViewModel>();
+            }
+
+            var postBooking1Request = new BookingBindingModel
+            {
+                RentalId = postRentalResult.Id,
+                Nights = 1,
+                Start = new DateTime(2021, 03, 01)
+            };
+
+            ResourceIdViewModel postBooking1Result;
+            using (var postBooking1Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking1Request))
+            {
+                Assert.True(postBooking1Response.IsSuccessStatusCode);
+                postBooking1Result = await postBooking1Response.Content.ReadAsAsync<ResourceIdViewModel>();
+            }
+
+            var requestChangeCrash = new AdminReArangeViewModel
+            {
+                RentalId = postRentalResult.Id,
+                Units = 1
+            };
+
+            AdminReArangeResultViewModel postResultChangeCrash;
+            using (var postResponse = await _client.PostAsJsonAsync($"/api/v1/admin", requestChangeCrash))
+            {
+                Assert.True(postResponse.IsSuccessStatusCode);
+                postResultChangeCrash = await postResponse.Content.ReadAsAsync<AdminReArangeResultViewModel>();
+                Assert.True(!postResultChangeCrash.Result);
+                Assert.DoesNotContain("It is not possible to change the Preparation TimePreparation", postResultChangeCrash.ErrorMessage);
+            }
         }
     }
 }

@@ -39,14 +39,6 @@ namespace VacationRental.Api
             services.AddSingleton<IDictionary<int, RentalViewModel>>(new Dictionary<int, RentalViewModel>());
             services.AddSingleton<IDictionary<int, BookingViewModel>>(new Dictionary<int, BookingViewModel>());
             services.AddSingleton<AdminViewModel>(new AdminViewModel());
-
-            //var preparationTimeInDaysCfg = Configuration.GetValue<string>("PreparationTimeInDays");
-            //int.TryParse(preparationTimeInDaysCfg, out int preparationTimeInDays);
-            //PreparationTimeInDays = preparationTimeInDays;
-            //if (PreparationTimeInDays == 0)
-            //{
-            //    PreparationTimeInDays = 1;
-            //}
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -7,5 +7,6 @@ namespace VacationRental.Api.Models
     public class AdminReArangeResultViewModel
     {
         public bool Result { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }

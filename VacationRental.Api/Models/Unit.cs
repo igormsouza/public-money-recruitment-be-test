@@ -29,12 +29,6 @@ namespace VacationRental.Api.Models
         public object Clone()
         {
             Unit newItem = (Unit)this.MemberwiseClone();
-            //newItem._bookingUnits = null;
-            //foreach (var oldBooking in BookingUnits)
-            //{
-            //    newItem.BookingUnits.Add((BookingUnit)oldBooking.Clone());
-            //}
-
             return newItem;
         }
     }
