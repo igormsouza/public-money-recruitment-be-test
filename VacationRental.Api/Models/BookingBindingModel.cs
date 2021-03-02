@@ -14,5 +14,10 @@ namespace VacationRental.Api.Models
 
         private DateTime _startIgnoreTime;
         public int Nights { get; set; }
+
+        /// <summary>
+        /// If the value is less or equals than 0, it will pick the Rental's unit value
+        /// </summary>
+        public int MinimunUnits { get; set; }
     }
 }

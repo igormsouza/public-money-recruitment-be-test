@@ -11,6 +11,17 @@ namespace VacationRental.Api
 {
     public class Startup
     {
+        private static int _preparationTimeInDays;
+        public static int PreparationTimeInDays 
+        { 
+            get  { return _preparationTimeInDays; }
+        }
+
+        public static void SetPreparationTimeInDays(int newPreparationTimeInDays)
+        {
+            _preparationTimeInDays = newPreparationTimeInDays;
+        }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -27,10 +38,11 @@ namespace VacationRental.Api
 
             services.AddSingleton<IDictionary<int, RentalViewModel>>(new Dictionary<int, RentalViewModel>());
             services.AddSingleton<IDictionary<int, BookingViewModel>>(new Dictionary<int, BookingViewModel>());
+            services.AddSingleton<AdminViewModel>(new AdminViewModel());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, AdminViewModel adminViewModel)
         {
             if (env.IsDevelopment())
             {
@@ -40,6 +52,8 @@ namespace VacationRental.Api
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(opts => opts.SwaggerEndpoint("/swagger/v1/swagger.json", "VacationRental v1"));
+
+            _preparationTimeInDays = adminViewModel.PreparationTimeIndays;
         }
     }
 }

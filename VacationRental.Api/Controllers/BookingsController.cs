@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
@@ -37,34 +38,19 @@ namespace VacationRental.Api.Controllers
                 throw new ApplicationException("Nigts must be positive");
             if (!_rentals.ContainsKey(model.RentalId))
                 throw new ApplicationException("Rental not found");
+            
+            if (model.MinimunUnits <= 0)
+                model.MinimunUnits = _rentals[model.RentalId].Units;
 
-            for (var i = 0; i < model.Nights; i++)
-            {
-                var count = 0;
-                foreach (var booking in _bookings.Values)
-                {
-                    if (booking.RentalId == model.RentalId
-                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights) > model.Start.Date)
-                        || (booking.Start < model.Start.AddDays(model.Nights) && booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
-                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
-                    {
-                        count++;
-                    }
-                }
-                if (count >= _rentals[model.RentalId].Units)
-                    throw new ApplicationException("Not available");
-            }
-
+            if (!_rentals[model.RentalId].IsAvailableRange(model.MinimunUnits, model.Start, model.Nights))
+                throw new ApplicationException("Not available");
 
             var key = new ResourceIdViewModel { Id = _bookings.Keys.Count + 1 };
 
-            _bookings.Add(key.Id, new BookingViewModel
-            {
-                Id = key.Id,
-                Nights = model.Nights,
-                RentalId = model.RentalId,
-                Start = model.Start.Date
-            });
+            _rentals[model.RentalId].AddBookings(key.Id, model.MinimunUnits, model.Start, model.Nights);
+
+            var bookings = _rentals[model.RentalId].BookingUnitsByRental.Where(o => o.IdBooking == key.Id).ToList();
+            _bookings.Add(key.Id, new BookingViewModel(key.Id, model.RentalId, model.Start.Date, model.Nights, bookings));
 
             return key;
         }
